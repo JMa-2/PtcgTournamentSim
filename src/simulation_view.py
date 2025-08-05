@@ -70,19 +70,12 @@ class SimulationView(tk.Frame):
         for deck in sorted_decks:
             self.results_text.insert(tk.END, f"Deck: {deck}\n")
             self.results_text.insert(tk.END, f"  Tournament Wins: {self.tournament_wins[deck]}\n")
-            self.results_text.insert(tk.END, f"  Top Cuts: {self.top_cuts[deck]}\n")
-            if self.total_matches_played[deck] > 0:
-                self.results_text.insert(tk.END, f"  Match Win Rate: {self.total_match_wins[deck] / self.total_matches_played[deck]:.2f}\n")
-                
-                total_deck_instances = num_simulations * actual_deck_player_counts[deck]
-
-                if total_deck_instances > 0:
-                    self.results_text.insert(tk.END, f"  Average Match Points: {self.total_match_points[deck] / total_deck_instances:.2f}\n\n")
-                else:
-                    self.results_text.insert(tk.END, "  Average Match Points: 0.00\n\n")
+            total_deck_instances = num_simulations * actual_deck_player_counts[deck]
+            if total_deck_instances > 0:
+                top_cut_conversion_rate = (self.top_cuts[deck] / total_deck_instances) * 100
+                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n\n")
             else:
-                self.results_text.insert(tk.END, "  Match Win Rate: 0.00%\n")
-                self.results_text.insert(tk.END, "  Average Match Points: 0.00\n\n")
+                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: 0.00%\n\n")
         
         self.results_text.insert(tk.END, "\n--- Simulation Configuration ---\n")
         self.results_text.insert(tk.END, f"Number of Players: {num_players}\n")
