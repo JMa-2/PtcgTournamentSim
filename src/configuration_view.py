@@ -144,6 +144,10 @@ class ConfigurationView(tk.Frame):
             converted_tie_rates[(deck1, deck2)] = value
         self.master.master.tie_rates = converted_tie_rates
 
+        self.other_play_rate_label = tk.Label(self.deck_list_frame, text="Other: 100.0%")
+        self.other_play_rate_label.grid(row=99, column=0, columnspan=2)
+        self.update_other_play_rate()
+
     def export_config(self):
         self.master.master.win_rates, self.master.master.tie_rates = self.master.master.matchup_view.get_matchup_data()
         now = datetime.datetime.now()
