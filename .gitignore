@@ -4,3 +4,8 @@ Results/*
 src/__pycache__
 notes.txt
 src/log.txt
+
+# PyInstaller
+/build/
+/dist/
+*.spec
