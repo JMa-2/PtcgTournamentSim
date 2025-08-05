@@ -13,10 +13,12 @@ class Tournament:
         self.tournament_structure = TournamentStructure(num_players, tournament_style)
         self.win_rate_format = win_rate_format
         self.players = []
+        self.all_players = []
         self.top_players = []
 
     def simulate(self):
         self.create_players()
+        self.all_players = self.players.copy()
 
         # Phase 1
         for i in range(self.tournament_structure.num_phase_one_rounds):
@@ -147,6 +149,8 @@ class Tournament:
             
             # Simulate a single match, not affecting overall stats
             match = Match(player1, player2, self.win_rates, self.tie_rates, self.win_rate_format)
+            player1.total_matches_played += 1
+            player2.total_matches_played += 1
             
             # Store previous match stats to isolate this match's result
             p1_wins_before = player1.matches_won

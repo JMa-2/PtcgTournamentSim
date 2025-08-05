@@ -33,13 +33,11 @@ class SimulationView(tk.Frame):
 
         self.tournament_wins = {deck: 0 for deck in self.master.master.decks}
         self.top_cuts = {deck: 0 for deck in self.master.master.decks}
+        self.total_deck_entries = {deck: 0 for deck in self.master.master.decks}
         self.total_match_wins = {deck: 0 for deck in self.master.master.decks}
-        self.total_match_points = {deck: 0 for deck in self.master.master.decks}
         self.total_matches_played = {deck: 0 for deck in self.master.master.decks}
 
         self.progress_bar["maximum"] = num_simulations
-        
-        actual_deck_player_counts = {deck: 0 for deck in self.master.master.decks}
 
         for i in range(num_simulations):
             tournament = Tournament(self.master.master.decks, play_rates, self.master.master.win_rates, self.master.master.tie_rates, num_players, tournament_style, self.master.master.win_rate_format)
@@ -50,13 +48,9 @@ class SimulationView(tk.Frame):
                 for player in tournament.top_players:
                     self.top_cuts[player.deck] += 1
 
-            if i == 0:
-                for player in tournament.players:
-                    actual_deck_player_counts[player.deck] += 1
-
-            for player in tournament.players:
+            for player in tournament.all_players:
+                self.total_deck_entries[player.deck] += 1
                 self.total_match_wins[player.deck] += player.matches_won
-                self.total_match_points[player.deck] += player.match_points
                 self.total_matches_played[player.deck] += player.total_matches_played
             
             self.progress_bar["value"] = i + 1
@@ -67,15 +61,42 @@ class SimulationView(tk.Frame):
 
         sorted_decks = sorted(self.master.master.decks, key=lambda deck: self.tournament_wins[deck], reverse=True)
 
+        total_top_cuts_all_decks = sum(self.top_cuts.values())
+        total_entries_all_decks = sum(self.total_deck_entries.values())
+        total_wins_all_decks = sum(self.tournament_wins.values())
+
         for deck in sorted_decks:
             self.results_text.insert(tk.END, f"Deck: {deck}\n")
             self.results_text.insert(tk.END, f"  Tournament Wins: {self.tournament_wins[deck]}\n")
-            total_deck_instances = num_simulations * actual_deck_player_counts[deck]
-            if total_deck_instances > 0:
-                top_cut_conversion_rate = (self.top_cuts[deck] / total_deck_instances) * 100
-                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n\n")
+            
+            deck_entries = self.total_deck_entries[deck]
+            deck_top_cuts = self.top_cuts[deck]
+            deck_wins = self.tournament_wins[deck]
+
+            if self.total_matches_played[deck] > 0:
+                match_win_rate = (self.total_match_wins[deck] / self.total_matches_played[deck]) * 100
+                self.results_text.insert(tk.END, f"  Match Win Rate: {match_win_rate:.2f}%\n")
             else:
-                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: 0.00%\n\n")
+                self.results_text.insert(tk.END, "  Match Win Rate: 0.00%\n")
+
+            if total_entries_all_decks > 0 and deck_entries > 0:
+                deck_share_of_field = deck_entries / total_entries_all_decks
+                if total_wins_all_decks > 0 and deck_wins > 0:
+                    deck_share_of_wins = deck_wins / total_wins_all_decks
+                    win_performance_ratio = deck_share_of_wins / deck_share_of_field
+                    self.results_text.insert(tk.END, f"  Win Performance Ratio: {win_performance_ratio:.2f}\n")
+                else:
+                    self.results_text.insert(tk.END, "  Win Performance Ratio: 0.00\n")
+
+                if total_top_cuts_all_decks > 0 and deck_top_cuts > 0:
+                    deck_share_of_top_cut = deck_top_cuts / total_top_cuts_all_decks
+                    performance_ratio = deck_share_of_top_cut / deck_share_of_field
+                    self.results_text.insert(tk.END, f"  Top Cut Performance Ratio: {performance_ratio:.2f}\n\n")
+                else:
+                    self.results_text.insert(tk.END, "  Top Cut Performance Ratio: 0.00\n\n")
+            else:
+                self.results_text.insert(tk.END, "  Win Performance Ratio: N/A\n")
+                self.results_text.insert(tk.END, "  Top Cut Performance Ratio: N/A\n\n")
         
         self.results_text.insert(tk.END, "\n--- Simulation Configuration ---\n")
         self.results_text.insert(tk.END, f"Number of Players: {num_players}\n")

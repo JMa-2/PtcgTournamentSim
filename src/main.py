@@ -67,6 +67,8 @@ class App(tk.Tk):
         self.matchup_view.update_grid(self.decks, self.win_rates, self.tie_rates)
 
     def show_simulation_view(self):
+        self.decks = [entry[0].get() for entry in self.configuration_view.deck_entries]
+        self.decks.append("Other")
         self.win_rates, self.tie_rates = self.matchup_view.get_matchup_data()
         self.win_rate_format = self.configuration_view.win_rate_format_var.get()
         self.configuration_view.pack_forget()
