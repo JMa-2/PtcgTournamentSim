@@ -1,0 +1,6 @@
+Exports/*
+Imports/*
+Results/*
+src/__pycache__
+notes.txt
+src/log.txt
