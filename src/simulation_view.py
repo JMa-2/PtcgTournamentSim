@@ -36,6 +36,7 @@ class SimulationView(tk.Frame):
         self.total_deck_entries = {deck: 0 for deck in self.master.master.decks}
         self.total_match_wins = {deck: 0 for deck in self.master.master.decks}
         self.total_matches_played = {deck: 0 for deck in self.master.master.decks}
+        self.total_day2_entries = {deck: 0 for deck in self.master.master.decks}
 
         self.progress_bar["maximum"] = num_simulations
 
@@ -47,6 +48,10 @@ class SimulationView(tk.Frame):
             if tournament.tournament_structure.num_top_cut_players > 0:
                 for player in tournament.top_players:
                     self.top_cuts[player.deck] += 1
+
+            if tournament.tournament_structure.num_phase_two_rounds > 0:
+                for player in tournament.day2_players:
+                    self.total_day2_entries[player.deck] += 1
 
             for player in tournament.all_players:
                 self.total_deck_entries[player.deck] += 1
@@ -91,9 +96,23 @@ class SimulationView(tk.Frame):
                 if total_top_cuts_all_decks > 0 and deck_top_cuts > 0:
                     deck_share_of_top_cut = deck_top_cuts / total_top_cuts_all_decks
                     performance_ratio = deck_share_of_top_cut / deck_share_of_field
-                    self.results_text.insert(tk.END, f"  Top Cut Performance Ratio: {performance_ratio:.2f}\n\n")
+                    self.results_text.insert(tk.END, f"  Top Cut Performance Ratio: {performance_ratio:.2f}\n")
                 else:
-                    self.results_text.insert(tk.END, "  Top Cut Performance Ratio: 0.00\n\n")
+                    self.results_text.insert(tk.END, "  Top Cut Performance Ratio: 0.00\n")
+
+                # New Conversion Rates
+                if self.total_day2_entries[deck] > 0:
+                    day2_conversion_rate = (self.total_day2_entries[deck] / deck_entries) * 100
+                    self.results_text.insert(tk.END, f"  Day 2 Conversion Rate: {day2_conversion_rate:.2f}%\n")
+                else:
+                    self.results_text.insert(tk.END, "  Day 2 Conversion Rate: 0.00%\n")
+
+                top_cut_conversion_rate = (deck_top_cuts / deck_entries) * 100
+                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n")
+
+                tournament_win_conversion_rate = (deck_wins / deck_entries) * 100
+                self.results_text.insert(tk.END, f"  Tournament Win Conversion Rate: {tournament_win_conversion_rate:.2f}%\n\n")
+
             else:
                 self.results_text.insert(tk.END, "  Win Performance Ratio: N/A\n")
                 self.results_text.insert(tk.END, "  Top Cut Performance Ratio: N/A\n\n")

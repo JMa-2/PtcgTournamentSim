@@ -24,9 +24,12 @@ class Tournament:
         for i in range(self.tournament_structure.num_phase_one_rounds):
             self.pair_round(i + 1)
 
+        self.day2_players = [] # Initialize for Day 2 players
+
         # Advance players to phase 2
         if self.tournament_structure.num_phase_two_rounds > 0:
             self.players = [p for p in self.players if p.match_points >= self.tournament_structure.phase_two_point_threshold]
+            self.day2_players = self.players.copy() # Store Day 2 players
 
             # Phase 2
             for i in range(self.tournament_structure.num_phase_two_rounds):
