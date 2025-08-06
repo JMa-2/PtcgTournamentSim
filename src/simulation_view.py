@@ -64,7 +64,16 @@ class SimulationView(tk.Frame):
         self.results_text.delete("1.0", tk.END)
         self.results_text.insert(tk.END, f"Tournament Results ({num_simulations} simulations):\n\n")
 
-        sorted_decks = sorted(self.master.master.decks, key=lambda deck: self.tournament_wins[deck], reverse=True)
+        tournament_win_conversion_rates = {}
+        for deck in self.master.master.decks:
+            deck_wins = self.tournament_wins[deck]
+            deck_entries = self.total_deck_entries[deck]
+            if deck_entries > 0:
+                tournament_win_conversion_rates[deck] = (deck_wins / deck_entries) * 100
+            else:
+                tournament_win_conversion_rates[deck] = 0
+
+        sorted_decks = sorted(self.master.master.decks, key=lambda deck: tournament_win_conversion_rates[deck], reverse=True)
 
         total_top_cuts_all_decks = sum(self.top_cuts.values())
         total_entries_all_decks = sum(self.total_deck_entries.values())
@@ -72,11 +81,13 @@ class SimulationView(tk.Frame):
 
         for deck in sorted_decks:
             self.results_text.insert(tk.END, f"Deck: {deck}\n")
-            self.results_text.insert(tk.END, f"  Tournament Wins: {self.tournament_wins[deck]}\n")
             
             deck_entries = self.total_deck_entries[deck]
             deck_top_cuts = self.top_cuts[deck]
             deck_wins = self.tournament_wins[deck]
+
+            self.results_text.insert(tk.END, f"  Tournament Win Conversion Rate: {tournament_win_conversion_rates[deck]:.2f}%\n")
+            self.results_text.insert(tk.END, f"  Tournament Wins: {self.tournament_wins[deck]}\n")
 
             if self.total_matches_played[deck] > 0:
                 match_win_rate = (self.total_match_wins[deck] / self.total_matches_played[deck]) * 100
@@ -108,10 +119,7 @@ class SimulationView(tk.Frame):
                     self.results_text.insert(tk.END, "  Day 2 Conversion Rate: 0.00%\n")
 
                 top_cut_conversion_rate = (deck_top_cuts / deck_entries) * 100
-                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n")
-
-                tournament_win_conversion_rate = (deck_wins / deck_entries) * 100
-                self.results_text.insert(tk.END, f"  Tournament Win Conversion Rate: {tournament_win_conversion_rate:.2f}%\n\n")
+                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n\n")
 
             else:
                 self.results_text.insert(tk.END, "  Win Performance Ratio: N/A\n")
