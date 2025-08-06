@@ -17,9 +17,14 @@ echo "--- Starting PtcgTournamentSim Build ---"
 
 # 1. Activate Virtual Environment
 echo "Activating virtual environment..."
-source "$VENV_DIR/bin/activate"
-if [ $? -ne 0 ]; then
-    echo "Error: Failed to activate virtual environment. Make sure it exists at '$VENV_DIR'."
+if [ -f "$VENV_DIR/bin/activate" ]; then
+    # Linux/macOS
+    source "$VENV_DIR/bin/activate"
+elif [ -f "$VENV_DIR/Scripts/activate" ]; then
+    # Windows
+    source "$VENV_DIR/Scripts/activate"
+else
+    echo "Error: Could not find virtual environment activation script in '$VENV_DIR/bin' or '$VENV_DIR/Scripts'."
     exit 1
 fi
 
