@@ -12,7 +12,16 @@ echo "--- Starting Project Setup ---"
 # 1. Check for and create virtual environment if it doesn't exist
 if [ ! -d "$VENV_DIR" ]; then
     echo "Virtual environment not found. Creating one..."
-    python3 -m venv "$VENV_DIR"
+    # Try python3 first, then fall back to python
+    if command -v python3 &> /dev/null; then
+        python3 -m venv "$VENV_DIR"
+    elif command -v python &> /dev/null; then
+        python -m venv "$VENV_DIR"
+    else
+        echo "Error: Neither 'python3' nor 'python' command found."
+        exit 1
+    fi
+
     if [ $? -ne 0 ]; then
         echo "Error: Failed to create virtual environment."
         exit 1
