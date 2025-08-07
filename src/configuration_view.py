@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 import json
 import datetime
 from tournament_logic import TournamentStructure, FORMAT_TYPES
@@ -19,8 +19,24 @@ class ConfigurationView(tk.Frame):
 
         tk.Button(self.deck_frame, text="Add Deck", command=lambda: self.add_deck_entry(self.deck_list_frame)).pack()
 
-        self.deck_list_frame = tk.Frame(self.deck_frame)
-        self.deck_list_frame.pack(fill=tk.BOTH, expand=True)
+        # Create a scrollable frame for the deck list
+        canvas = tk.Canvas(self.deck_frame)
+        scrollbar = ttk.Scrollbar(self.deck_frame, orient="vertical", command=canvas.yview)
+        self.deck_list_frame = ttk.Frame(canvas)
+
+        self.deck_list_frame.bind(
+            "<Configure>",
+            lambda e: canvas.configure(
+                scrollregion=canvas.bbox("all")
+            )
+        )
+
+        canvas.create_window((0, 0), window=self.deck_list_frame, anchor="nw")
+        canvas.configure(yscrollcommand=scrollbar.set)
+
+        canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        scrollbar.pack(side=tk.RIGHT, fill="y")
+
 
         tk.Label(self.deck_list_frame, text="Decks").grid(row=0, column=0)
         tk.Label(self.deck_list_frame, text="Play Rate (%)").grid(row=0, column=1)
