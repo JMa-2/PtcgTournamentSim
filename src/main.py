@@ -3,6 +3,7 @@ import tkinter as tk
 from tkinter import font
 from configuration_view import ConfigurationView
 from matchup_view import MatchupView
+from player_skill_view import PlayerSkillView
 from simulation_view import SimulationView
 
 class App(tk.Tk):
@@ -18,6 +19,7 @@ class App(tk.Tk):
         self.decks = []
         self.win_rates = {}
         self.tie_rates = {}
+        self.skill_values = {}
         self.num_simulations = 1000 # Default value
         print(f"DEBUG: App instance ID: {id(self)}")
 
@@ -27,6 +29,8 @@ class App(tk.Tk):
 
         self.config_button = tk.Button(header_frame, text="Configuration", command=self.show_configuration_view)
         self.config_button.pack(side=tk.LEFT)
+        self.player_skill_button = tk.Button(header_frame, text="Player Skill", command=self.show_player_skill_view)
+        self.player_skill_button.pack(side=tk.LEFT)
         self.matchup_button = tk.Button(header_frame, text="Matchups", command=self.show_matchup_view)
         self.matchup_button.pack(side=tk.LEFT)
         self.sim_button = tk.Button(header_frame, text="Simulation", command=self.show_simulation_view)
@@ -39,25 +43,44 @@ class App(tk.Tk):
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
         self.configuration_view = ConfigurationView(self.main_frame)
+        self.player_skill_view = PlayerSkillView(self.main_frame)
         self.matchup_view = MatchupView(self.main_frame)
         self.simulation_view = SimulationView(self.main_frame)
 
         self.show_configuration_view()
 
     def show_configuration_view(self):
+        self.player_skill_view.pack_forget()
         self.matchup_view.pack_forget()
         self.simulation_view.pack_forget()
         self.configuration_view.pack(fill=tk.BOTH, expand=True)
         self.config_button.config(state=tk.DISABLED)
+        self.player_skill_button.config(state=tk.NORMAL)
+        self.matchup_button.config(state=tk.NORMAL)
+        self.sim_button.config(state=tk.NORMAL)
+
+    def show_player_skill_view(self):
+        self.skill_values = self.player_skill_view.get_skill_values()
+        self.decks = [entry[0].get() for entry in self.configuration_view.deck_entries]
+        self.player_skill_view.update_deck_list(self.decks)
+        self.player_skill_view.set_skill_values(self.skill_values)
+        self.configuration_view.pack_forget()
+        self.matchup_view.pack_forget()
+        self.simulation_view.pack_forget()
+        self.player_skill_view.pack(fill=tk.BOTH, expand=True)
+        self.config_button.config(state=tk.NORMAL)
+        self.player_skill_button.config(state=tk.DISABLED)
         self.matchup_button.config(state=tk.NORMAL)
         self.sim_button.config(state=tk.NORMAL)
 
     def show_matchup_view(self):
         self.update_matchup_data()
         self.configuration_view.pack_forget()
+        self.player_skill_view.pack_forget()
         self.simulation_view.pack_forget()
         self.matchup_view.pack(fill=tk.BOTH, expand=True)
         self.config_button.config(state=tk.NORMAL)
+        self.player_skill_button.config(state=tk.NORMAL)
         self.matchup_button.config(state=tk.DISABLED)
         self.sim_button.config(state=tk.NORMAL)
 
@@ -70,6 +93,7 @@ class App(tk.Tk):
         self.decks = [entry[0].get() for entry in self.configuration_view.deck_entries]
         self.decks.append("Other")
         self.win_rates, self.tie_rates = self.matchup_view.get_matchup_data()
+        self.skill_values = self.player_skill_view.get_skill_values()
         self.win_rate_format = self.configuration_view.win_rate_format_var.get()
         self.configuration_view.pack_forget()
         self.matchup_view.pack_forget()

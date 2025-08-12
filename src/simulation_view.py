@@ -41,7 +41,7 @@ class SimulationView(tk.Frame):
         self.progress_bar["maximum"] = num_simulations
 
         for i in range(num_simulations):
-            tournament = Tournament(self.master.master.decks, play_rates, self.master.master.win_rates, self.master.master.tie_rates, num_players, tournament_style, self.master.master.win_rate_format)
+            tournament = Tournament(self.master.master.decks, play_rates, self.master.master.win_rates, self.master.master.tie_rates, num_players, tournament_style, self.master.master.win_rate_format, self.master.master.skill_values)
             results = tournament.simulate()
             self.tournament_wins[results['winner']] += 1
 

@@ -1,8 +1,7 @@
-# player.py
-
 class Player:
-    def __init__(self, deck):
+    def __init__(self, deck, skill):
         self.deck = deck
+        self.skill = skill
         self.match_points = 0
         self.opponents = []
         self.matches_won = 0
