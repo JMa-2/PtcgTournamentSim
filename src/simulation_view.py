@@ -29,6 +29,13 @@ class SimulationView(tk.Frame):
         num_players = int(self.master.master.configuration_view.num_players_entry.get())
         tournament_style = self.master.master.configuration_view.tournament_style_var.get()
         play_rates = {entry[0].get(): float(entry[1].get()) for entry in self.master.master.configuration_view.deck_entries}
+        
+        # Calculate and add "Other" play rate early so it's available for baseline winrate calculation
+        other_play_rate = 100 - sum(play_rates.values())
+        if other_play_rate < 0:
+            other_play_rate = 0 # Ensure play rate is not negative
+        play_rates["Other"] = other_play_rate
+
         num_simulations = int(self.master.master.configuration_view.num_simulations_var.get())
 
         self.tournament_wins = {deck: 0 for deck in self.master.master.decks}
@@ -119,13 +126,20 @@ class SimulationView(tk.Frame):
                     self.results_text.insert(tk.END, "  Day 2 Conversion Rate: 0.00%\n")
 
                 top_cut_conversion_rate = (deck_top_cuts / deck_entries) * 100
-                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n\n")
+                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n")
 
             else:
                 self.results_text.insert(tk.END, "  Win Performance Ratio: N/A\n")
-                self.results_text.insert(tk.END, "  Top Cut Performance Ratio: N/A\n\n")
+                self.results_text.insert(tk.END, "  Top Cut Performance Ratio: N/A\n")
+
+            # Calculate and display Baseline Winrate
+            baseline_winrate = 0
+            for deck2, rate in play_rates.items():
+                win_rate_vs_deck2 = self.master.master.win_rates.get((deck, deck2), 0.5) # Default to 0.5 if not found
+                baseline_winrate += win_rate_vs_deck2 * (rate / 100.0)
+            self.results_text.insert(tk.END, f"  Baseline Winrate: {baseline_winrate * 100:.2f}%\n\n")
         
-        self.results_text.insert(tk.END, "\n--- Simulation Configuration ---\n")
+        self.results_text.insert(tk.END, "\n--- Simulation Configuration ---")
         self.results_text.insert(tk.END, f"Number of Players: {num_players}\n")
         self.results_text.insert(tk.END, f"Tournament Style: {tournament_style}\n")
         self.results_text.insert(tk.END, f"Number of Simulations: {num_simulations}\n")
