@@ -6,7 +6,7 @@ from tournament_logic import TournamentStructure
 import datetime
 
 class SimulationView(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, version_number):
         super().__init__(master)
 
         tk.Label(self, text="Simulation View").pack()
@@ -21,6 +21,10 @@ class SimulationView(tk.Frame):
         self.results_text.pack(fill=tk.BOTH, expand=True)
 
         tk.Button(self, text="Export Results", command=self.export_results).pack()
+
+        # Add version label
+        version_label = tk.Label(self, text=version_number, anchor="se")
+        version_label.pack(side="bottom", fill="x")
 
     def run_simulation(self):
         self.run_button.config(text="Running...", state=tk.DISABLED)

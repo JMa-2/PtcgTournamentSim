@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 
 class MatchupView(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, version_number):
         super().__init__(master)
 
         tk.Label(self, text="Matchup View").pack()
@@ -27,6 +27,10 @@ class MatchupView(tk.Frame):
 
         self.win_rate_entries = {}
         self.tie_rate_entries = {}
+
+        # Add version label
+        version_label = tk.Label(self, text=version_number, anchor="se")
+        version_label.pack(side="bottom", fill="x")
 
     def update_grid(self, decks, win_rates, tie_rates):
         # Clear existing widgets
