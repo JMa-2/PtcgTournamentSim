@@ -4,6 +4,8 @@ Results/*
 src/__pycache__
 notes.txt
 src/log.txt
+TrainerHillConverter/InputFiles
+TrainerHillConverter/*.json
 
 # PyInstaller
 /build/

@@ -14,6 +14,14 @@ class Match:
         win_rate = self.win_rates.get((self.player1.deck, self.player2.deck), self.win_rates.get((self.player2.deck, self.player1.deck), 0.5))
         tie_rate = self.tie_rates.get((self.player1.deck, self.player2.deck), self.tie_rates.get((self.player2.deck, self.player1.deck), 0.0))
 
+        # Apply skill-based win rate adjustment
+        skill_adjustment = self.player1.skill - self.player2.skill
+        win_rate += skill_adjustment
+
+        # Ensure win_rate and tie_rate are within valid bounds
+        win_rate = max(0, min(1, win_rate))
+        tie_rate = max(0, min(1 - win_rate, tie_rate))
+
         rand_val = random.random()
 
         if rand_val < tie_rate:

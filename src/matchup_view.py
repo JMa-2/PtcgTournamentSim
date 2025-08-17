@@ -39,7 +39,7 @@ class MatchupView(tk.Frame):
         # Header
         tk.Label(self.scrollable_frame, text="Deck 1").grid(row=0, column=0, padx=30)
         tk.Label(self.scrollable_frame, text="Deck 2").grid(row=0, column=1, padx=30)
-        tk.Label(self.scrollable_frame, text="Win Rate (%)").grid(row=0, column=2, padx=30)
+        tk.Label(self.scrollable_frame, text="Deck 1's Win Rate (%)").grid(row=0, column=2, padx=30)
         tk.Label(self.scrollable_frame, text="Tie Rate (%)").grid(row=0, column=3, padx=30)
 
         # Create new list

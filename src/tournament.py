@@ -2,9 +2,10 @@ import random
 from player import Player
 from match import Match
 from tournament_logic import TournamentStructure
+from scipy.stats import truncnorm
 
 class Tournament:
-    def __init__(self, decks, play_rates, win_rates, tie_rates, num_players, tournament_style, win_rate_format):
+    def __init__(self, decks, play_rates, win_rates, tie_rates, num_players, tournament_style, win_rate_format, skill_values):
         self.decks = decks
         self.play_rates = play_rates
         self.win_rates = win_rates
@@ -12,6 +13,7 @@ class Tournament:
         self.num_players = num_players
         self.tournament_structure = TournamentStructure(num_players, tournament_style)
         self.win_rate_format = win_rate_format
+        self.skill_values = skill_values
         self.players = []
         self.all_players = []
         self.top_players = []
@@ -54,19 +56,42 @@ class Tournament:
 
     def create_players(self):
         self.players = []
-        
+
         # Ensure 'Other' deck is in play_rates, even if its play_rate is 0
         if "Other" not in self.play_rates:
             self.play_rates["Other"] = 0.0
 
+        # Pre-generate skill values for all players
+        all_skill_values = {}
         for deck, play_rate in self.play_rates.items():
             num_players_for_deck = round(self.num_players * (play_rate / 100))
-            for _ in range(num_players_for_deck):
-                self.players.append(Player(deck))
+            skill_value = self.skill_values.get(deck, 0.0)
+
+            if skill_value != 0 and num_players_for_deck > 0:
+                lower_bound = -skill_value / 100 # Convert percentage to decimal
+                upper_bound = skill_value / 100
+                mu = 0
+                sigma = (skill_value / 100) / 3  # Standard deviation
+
+                # Create the truncated normal distribution
+                X = truncnorm(
+                    (lower_bound - mu) / sigma, (upper_bound - mu) / sigma, loc=mu, scale=sigma
+                )
+                # Generate all skill values for this deck in one batch
+                all_skill_values[deck] = X.rvs(num_players_for_deck)
+            elif num_players_for_deck > 0:
+                all_skill_values[deck] = [0] * num_players_for_deck
+
+        # Create player instances with pre-generated skill values
+        for deck, skills in all_skill_values.items():
+            for skill in skills:
+                self.players.append(Player(deck, skill))
 
         # Adjust player count to match num_players, adding "Other" for any remainder
+        other_skill_value = self.skill_values.get("Other", 0.0)
         while len(self.players) < self.num_players:
-            self.players.append(Player("Other"))
+            self.players.append(Player("Other", other_skill_value))
+        
         random.shuffle(self.players)
 
     def pair_round(self, round_number):

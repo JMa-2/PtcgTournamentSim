@@ -160,12 +160,17 @@ class ConfigurationView(tk.Frame):
             converted_tie_rates[(deck1, deck2)] = value
         self.master.master.tie_rates = converted_tie_rates
 
+        self.master.master.skill_values = config.get("skill_values", {})
+        self.master.master.player_skill_view.enable_skill_var.set(config.get("enable_skill", True))
+        self.master.master.player_skill_view.set_skill_values(self.master.master.skill_values)
+
         self.other_play_rate_label = tk.Label(self.deck_list_frame, text="Other: 100.0%")
         self.other_play_rate_label.grid(row=99, column=0, columnspan=2)
         self.update_other_play_rate()
 
     def export_config(self):
         self.master.master.win_rates, self.master.master.tie_rates = self.master.master.matchup_view.get_matchup_data()
+        self.master.master.skill_values = self.master.master.player_skill_view.get_skill_values()
         now = datetime.datetime.now()
         default_filename = f"config_{now.strftime('%Y%m%d_%H%M%S')}.json"
         filepath = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")], initialfile=default_filename)
@@ -188,7 +193,9 @@ class ConfigurationView(tk.Frame):
             "tournament_style": self.tournament_style_var.get(),
             "num_simulations": int(self.num_simulations_var.get()),
             "win_rates": converted_win_rates,
-            "tie_rates": converted_tie_rates
+            "tie_rates": converted_tie_rates,
+            "skill_values": self.master.master.skill_values,
+            "enable_skill": self.master.master.player_skill_view.enable_skill_var.get()
         }
 
         for deck_name_entry, play_rate_entry, _ in self.deck_entries:

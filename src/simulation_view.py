@@ -29,6 +29,13 @@ class SimulationView(tk.Frame):
         num_players = int(self.master.master.configuration_view.num_players_entry.get())
         tournament_style = self.master.master.configuration_view.tournament_style_var.get()
         play_rates = {entry[0].get(): float(entry[1].get()) for entry in self.master.master.configuration_view.deck_entries}
+        
+        # Calculate and add "Other" play rate early so it's available for baseline winrate calculation
+        other_play_rate = 100 - sum(play_rates.values())
+        if other_play_rate < 0:
+            other_play_rate = 0 # Ensure play rate is not negative
+        play_rates["Other"] = other_play_rate
+
         num_simulations = int(self.master.master.configuration_view.num_simulations_var.get())
 
         self.tournament_wins = {deck: 0 for deck in self.master.master.decks}
@@ -41,7 +48,7 @@ class SimulationView(tk.Frame):
         self.progress_bar["maximum"] = num_simulations
 
         for i in range(num_simulations):
-            tournament = Tournament(self.master.master.decks, play_rates, self.master.master.win_rates, self.master.master.tie_rates, num_players, tournament_style, self.master.master.win_rate_format)
+            tournament = Tournament(self.master.master.decks, play_rates, self.master.master.win_rates, self.master.master.tie_rates, num_players, tournament_style, self.master.master.win_rate_format, self.master.master.skill_values)
             results = tournament.simulate()
             self.tournament_wins[results['winner']] += 1
 
@@ -64,8 +71,13 @@ class SimulationView(tk.Frame):
         self.results_text.delete("1.0", tk.END)
         self.results_text.insert(tk.END, f"Tournament Results ({num_simulations} simulations):\n\n")
 
+        # --- Metric Calculations ---
+        
+        decks = self.master.master.decks
+        
+        # 1. Tournament Win Conversion Rate
         tournament_win_conversion_rates = {}
-        for deck in self.master.master.decks:
+        for deck in decks:
             deck_wins = self.tournament_wins[deck]
             deck_entries = self.total_deck_entries[deck]
             if deck_entries > 0:
@@ -73,75 +85,114 @@ class SimulationView(tk.Frame):
             else:
                 tournament_win_conversion_rates[deck] = 0
 
-        sorted_decks = sorted(self.master.master.decks, key=lambda deck: tournament_win_conversion_rates[deck], reverse=True)
+        # 2. Tournament Wins
+        tournament_wins = self.tournament_wins
 
-        total_top_cuts_all_decks = sum(self.top_cuts.values())
+        # 3. Match Win Rate
+        match_win_rates = {}
+        for deck in decks:
+            if self.total_matches_played[deck] > 0:
+                match_win_rates[deck] = (self.total_match_wins[deck] / self.total_matches_played[deck]) * 100
+            else:
+                match_win_rates[deck] = 0
+
         total_entries_all_decks = sum(self.total_deck_entries.values())
         total_wins_all_decks = sum(self.tournament_wins.values())
+        total_top_cuts_all_decks = sum(self.top_cuts.values())
+
+        # 4. Win Performance Ratio
+        win_performance_ratios = {}
+        for deck in decks:
+            deck_entries = self.total_deck_entries[deck]
+            deck_wins = self.tournament_wins[deck]
+            if total_entries_all_decks > 0 and deck_entries > 0 and total_wins_all_decks > 0 and deck_wins > 0:
+                deck_share_of_field = deck_entries / total_entries_all_decks
+                deck_share_of_wins = deck_wins / total_wins_all_decks
+                win_performance_ratios[deck] = deck_share_of_wins / deck_share_of_field
+            else:
+                win_performance_ratios[deck] = 0
+
+        # 5. Top Cut Performance Ratio
+        top_cut_performance_ratios = {}
+        for deck in decks:
+            deck_entries = self.total_deck_entries[deck]
+            deck_top_cuts = self.top_cuts[deck]
+            if total_entries_all_decks > 0 and deck_entries > 0 and total_top_cuts_all_decks > 0 and deck_top_cuts > 0:
+                deck_share_of_field = deck_entries / total_entries_all_decks
+                deck_share_of_top_cut = deck_top_cuts / total_top_cuts_all_decks
+                top_cut_performance_ratios[deck] = deck_share_of_top_cut / deck_share_of_field
+            else:
+                top_cut_performance_ratios[deck] = 0
+
+        # 6. Day 2 Conversion Rate
+        day_2_conversion_rates = {}
+        for deck in decks:
+            deck_entries = self.total_deck_entries[deck]
+            if self.total_day2_entries[deck] > 0:
+                day_2_conversion_rates[deck] = (self.total_day2_entries[deck] / deck_entries) * 100
+            else:
+                day_2_conversion_rates[deck] = 0
+        
+        # 7. Top Cut Conversion Rate
+        top_cut_conversion_rates = {}
+        for deck in decks:
+            deck_entries = self.total_deck_entries[deck]
+            deck_top_cuts = self.top_cuts[deck]
+            if deck_entries > 0:
+                top_cut_conversion_rates[deck] = (deck_top_cuts / deck_entries) * 100
+            else:
+                top_cut_conversion_rates[deck] = 0
+
+        # 8. Baseline Winrate
+        baseline_winrates = {}
+        for deck in decks:
+            baseline_winrate = 0
+            for deck2, rate in play_rates.items():
+                win_rate_vs_deck2 = self.master.master.win_rates.get((deck, deck2), 0.5)
+                baseline_winrate += win_rate_vs_deck2 * (rate / 100.0)
+            baseline_winrates[deck] = baseline_winrate * 100
+
+        # --- Ranking ---
+        def get_ranks(metric_dict):
+            sorted_decks = sorted(metric_dict.items(), key=lambda item: item[1], reverse=True)
+            ranks = {deck: i + 1 for i, (deck, _) in enumerate(sorted_decks)}
+            return ranks
+
+        tournament_win_conversion_rate_ranks = get_ranks(tournament_win_conversion_rates)
+        tournament_wins_ranks = get_ranks(tournament_wins)
+        match_win_rate_ranks = get_ranks(match_win_rates)
+        win_performance_ratio_ranks = get_ranks(win_performance_ratios)
+        top_cut_performance_ratio_ranks = get_ranks(top_cut_performance_ratios)
+        day_2_conversion_rate_ranks = get_ranks(day_2_conversion_rates)
+        top_cut_conversion_rate_ranks = get_ranks(top_cut_conversion_rates)
+        baseline_winrate_ranks = get_ranks(baseline_winrates)
+
+        # --- Display Results ---
+        
+        sorted_decks = sorted(decks, key=lambda deck: tournament_win_conversion_rates[deck], reverse=True)
 
         for deck in sorted_decks:
             self.results_text.insert(tk.END, f"Deck: {deck}\n")
-            
-            deck_entries = self.total_deck_entries[deck]
-            deck_top_cuts = self.top_cuts[deck]
-            deck_wins = self.tournament_wins[deck]
 
-            self.results_text.insert(tk.END, f"  Tournament Win Conversion Rate: {tournament_win_conversion_rates[deck]:.2f}%\n")
-            self.results_text.insert(tk.END, f"  Tournament Wins: {self.tournament_wins[deck]}\n")
+            self.results_text.insert(tk.END, f"  Tournament Win Conversion Rate: {tournament_win_conversion_rates[deck]:.2f}% [{tournament_win_conversion_rate_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Tournament Wins: {tournament_wins[deck]} [{tournament_wins_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Match Win Rate: {match_win_rates[deck]:.2f}% [{match_win_rate_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Win Performance Ratio: {win_performance_ratios[deck]:.2f} [{win_performance_ratio_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Top Cut Performance Ratio: {top_cut_performance_ratios[deck]:.2f} [{top_cut_performance_ratio_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Day 2 Conversion Rate: {day_2_conversion_rates[deck]:.2f}% [{day_2_conversion_rate_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rates[deck]:.2f}% [{top_cut_conversion_rate_ranks[deck]}]\n")
+            self.results_text.insert(tk.END, f"  Baseline Winrate: {baseline_winrates[deck]:.2f}% [{baseline_winrate_ranks[deck]}]\n\n")
 
-            if self.total_matches_played[deck] > 0:
-                match_win_rate = (self.total_match_wins[deck] / self.total_matches_played[deck]) * 100
-                self.results_text.insert(tk.END, f"  Match Win Rate: {match_win_rate:.2f}%\n")
-            else:
-                self.results_text.insert(tk.END, "  Match Win Rate: 0.00%\n")
-
-            if total_entries_all_decks > 0 and deck_entries > 0:
-                deck_share_of_field = deck_entries / total_entries_all_decks
-                if total_wins_all_decks > 0 and deck_wins > 0:
-                    deck_share_of_wins = deck_wins / total_wins_all_decks
-                    win_performance_ratio = deck_share_of_wins / deck_share_of_field
-                    self.results_text.insert(tk.END, f"  Win Performance Ratio: {win_performance_ratio:.2f}\n")
-                else:
-                    self.results_text.insert(tk.END, "  Win Performance Ratio: 0.00\n")
-
-                if total_top_cuts_all_decks > 0 and deck_top_cuts > 0:
-                    deck_share_of_top_cut = deck_top_cuts / total_top_cuts_all_decks
-                    performance_ratio = deck_share_of_top_cut / deck_share_of_field
-                    self.results_text.insert(tk.END, f"  Top Cut Performance Ratio: {performance_ratio:.2f}\n")
-                else:
-                    self.results_text.insert(tk.END, "  Top Cut Performance Ratio: 0.00\n")
-
-                # New Conversion Rates
-                if self.total_day2_entries[deck] > 0:
-                    day2_conversion_rate = (self.total_day2_entries[deck] / deck_entries) * 100
-                    self.results_text.insert(tk.END, f"  Day 2 Conversion Rate: {day2_conversion_rate:.2f}%\n")
-                else:
-                    self.results_text.insert(tk.END, "  Day 2 Conversion Rate: 0.00%\n")
-
-                top_cut_conversion_rate = (deck_top_cuts / deck_entries) * 100
-                self.results_text.insert(tk.END, f"  Top Cut Conversion Rate: {top_cut_conversion_rate:.2f}%\n\n")
-
-            else:
-                self.results_text.insert(tk.END, "  Win Performance Ratio: N/A\n")
-                self.results_text.insert(tk.END, "  Top Cut Performance Ratio: N/A\n\n")
-        
         self.results_text.insert(tk.END, "\n--- Simulation Configuration ---\n")
         self.results_text.insert(tk.END, f"Number of Players: {num_players}\n")
         self.results_text.insert(tk.END, f"Tournament Style: {tournament_style}\n")
         self.results_text.insert(tk.END, f"Number of Simulations: {num_simulations}\n")
         self.results_text.insert(tk.END, f"Win Rate Format: {self.master.master.win_rate_format}\n")
         self.results_text.insert(tk.END, "\nDeck Play Rates:\n")
-        other_play_rate = 100 - sum(play_rates.values())
-        play_rates["Other"] = other_play_rate
         for deck, rate in play_rates.items():
             self.results_text.insert(tk.END, f"  {deck}: {rate}%\n")
 
         self.run_button.config(text="Run Simulation", state=tk.NORMAL)
-
-
-    
-
-# ... (rest of the file)
 
     def export_results(self):
         now = datetime.datetime.now()
