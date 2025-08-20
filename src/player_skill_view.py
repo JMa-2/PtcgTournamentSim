@@ -4,7 +4,7 @@ from PIL import Image, ImageTk
 import os
 
 class PlayerSkillView(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, version_number):
         super().__init__(master)
 
         self.enable_skill_var = tk.BooleanVar(value=True)
@@ -66,6 +66,10 @@ For each tournament simulation, the skill level of all players is randomized bas
             self.photo_image = ImageTk.PhotoImage(img)
             image_label = tk.Label(right_frame, image=self.photo_image)
             image_label.pack(anchor="w", pady=5)
+
+        # Add version label
+        version_label = tk.Label(self, text=version_number, anchor="se")
+        version_label.pack(side="bottom", fill="x")
 
     def update_deck_list(self, decks):
         for widget in self.scrollable_frame.winfo_children():

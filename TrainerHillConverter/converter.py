@@ -17,6 +17,8 @@ def convert_trainerhill_to_ptcg_sim(input_csv_path, output_json_path):
             decks.add(deck2)
             
             key = f"{deck1.replace('-', ' ')}_{deck2.replace('-', ' ')}"
+            if win_rate_str == '':
+                win_rate_str = '50.0'
             win_rates[key] = float(win_rate_str) / 100.0
 
     deck_list = sorted(list(decks))

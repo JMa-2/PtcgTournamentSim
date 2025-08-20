@@ -119,19 +119,19 @@ def get_phase_two_round_count(num_players, format):
         if num_players <= 64:
             round_count = 0
         elif num_players <= 128:
-            round_count = 2
-        elif num_players <= 256:
-            round_count = 2
-        elif num_players <= 512:
-            round_count = 2
-        elif num_players <= 1024:
             round_count = 3
+        elif num_players <= 256:
+            round_count = 3
+        elif num_players <= 512:
+            round_count = 3
+        elif num_players <= 1024:
+            round_count = 4
         elif num_players <= 2048:
-            round_count = 4
-        elif num_players <= 4096:
-            round_count = 4
-        elif num_players <= 8192:
             round_count = 5
+        elif num_players <= 4096:
+            round_count = 5
+        elif num_players <= 8192:
+            round_count = 6
     
     return round_count
 
@@ -200,6 +200,6 @@ def get_max_asymmetrical_players(num_players, format):
 
     if format == CHAMPIONSHIP_FORMAT:
         if num_players > 8:
-            max_players = 32
+            max_players = 16
 
     return max_players

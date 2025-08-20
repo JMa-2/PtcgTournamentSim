@@ -6,6 +6,8 @@ from matchup_view import MatchupView
 from player_skill_view import PlayerSkillView
 from simulation_view import SimulationView
 
+VERSION_NUMBER = "v0.1"
+
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -21,7 +23,6 @@ class App(tk.Tk):
         self.tie_rates = {}
         self.skill_values = {}
         self.num_simulations = 1000 # Default value
-        print(f"DEBUG: App instance ID: {id(self)}")
 
         # Header
         header_frame = tk.Frame(self)
@@ -42,10 +43,10 @@ class App(tk.Tk):
         self.main_frame = tk.Frame(self)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-        self.configuration_view = ConfigurationView(self.main_frame)
-        self.player_skill_view = PlayerSkillView(self.main_frame)
-        self.matchup_view = MatchupView(self.main_frame)
-        self.simulation_view = SimulationView(self.main_frame)
+        self.configuration_view = ConfigurationView(self.main_frame, VERSION_NUMBER)
+        self.player_skill_view = PlayerSkillView(self.main_frame, VERSION_NUMBER)
+        self.matchup_view = MatchupView(self.main_frame, VERSION_NUMBER)
+        self.simulation_view = SimulationView(self.main_frame, VERSION_NUMBER)
 
         self.show_configuration_view()
 

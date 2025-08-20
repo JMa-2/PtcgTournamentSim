@@ -7,7 +7,7 @@ from tournament_logic import TournamentStructure, FORMAT_TYPES
 import datetime
 
 class ConfigurationView(tk.Frame):
-    def __init__(self, master):
+    def __init__(self, master, version_number):
         super().__init__(master)
 
         main_frame = tk.Frame(self)
@@ -77,6 +77,10 @@ class ConfigurationView(tk.Frame):
         self.num_simulations_var = tk.StringVar(value="1000") # Default to 1000
         self.num_simulations_menu = tk.OptionMenu(options_frame, self.num_simulations_var, "1000", "5000", "10000")
         self.num_simulations_menu.pack()
+
+        # Add version label
+        version_label = tk.Label(self, text=version_number, anchor="se")
+        version_label.pack(side="bottom", fill="x")
 
     def toggle_ties(self):
         self.master.master.update_matchup_data()
