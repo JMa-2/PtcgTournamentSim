@@ -82,7 +82,7 @@ class MatchupView(tk.Frame):
             try:
                 win_rate = float(entry.get()) / 100.0
             except ValueError:
-                win_rate = 0.0
+                win_rate = 0.5
             win_rates[(deck1, deck2)] = win_rate
 
             # Get tie rate for the current matchup
