@@ -72,9 +72,9 @@ def get_phase_one_round_count(num_players, format):
         elif num_players <= 64:
             round_count = 7
         elif num_players <= 128:
-            round_count = 6
-        elif num_players <= 256:
             round_count = 7
+        elif num_players <= 256:
+            round_count = 8
         elif num_players <= 512:
             round_count = 8
         elif num_players <= 1024:
@@ -82,7 +82,7 @@ def get_phase_one_round_count(num_players, format):
         elif num_players <= 2048:
             round_count = 8
         elif num_players <= 4096:
-            round_count = 9
+            round_count = 8
         elif num_players <= 8192:
             round_count = 9
     
@@ -96,9 +96,9 @@ def get_phase_two_point_threshold(num_players, format):
         if num_players <= 64:
             point_threshold = 0
         elif num_players <= 128:
-            point_threshold = 10
-        elif num_players <= 256:
             point_threshold = 13
+        elif num_players <= 256:
+            point_threshold = 16
         elif num_players <= 512:
             point_threshold = 16
         elif num_players <= 1024:
@@ -106,7 +106,7 @@ def get_phase_two_point_threshold(num_players, format):
         elif num_players <= 2048:
             point_threshold = 16
         elif num_players <= 4096:
-            point_threshold = 19
+            point_threshold = 16
         elif num_players <= 8192:
             point_threshold = 19
 
@@ -119,9 +119,9 @@ def get_phase_two_round_count(num_players, format):
         if num_players <= 64:
             round_count = 0
         elif num_players <= 128:
-            round_count = 3
+            round_count = 2
         elif num_players <= 256:
-            round_count = 3
+            round_count = 2
         elif num_players <= 512:
             round_count = 3
         elif num_players <= 1024:
@@ -129,7 +129,7 @@ def get_phase_two_round_count(num_players, format):
         elif num_players <= 2048:
             round_count = 5
         elif num_players <= 4096:
-            round_count = 5
+            round_count = 6
         elif num_players <= 8192:
             round_count = 6
     
